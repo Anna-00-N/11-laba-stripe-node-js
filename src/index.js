@@ -2,10 +2,29 @@
 const express = require("express");
 const app = express();
 app.use(express.json());
-const stripe = require("stripe")("sk_test_4eC39HqLyjWDarjtT1zdp7dc");
+const stripe = require("stripe")("sk_test_gMcOdq4pTQQO1OMHNFTYoONx00souJztTx");
 const port = process.env.PORT || 4242;
+const cors = require("cors");
 
-app.get("/", (req, res) => {
+app.use(cors());
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
+  app.options("*", (req, res) => {
+    // allowed XHR methods
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET, PATCH, PUT, POST, DELETE, OPTIONS"
+    );
+    res.send();
+  });
+});
+
+app.get("/", cors(), (req, res) => {
   // Display checkout page
   res.send("Main page");
 });
@@ -13,9 +32,9 @@ app.get("/", (req, res) => {
 // Endpoint for when `/pay` is called from client
 app.post("/pay", async (request, response) => {
   try {
-    // Create the PaymentIntent
+    // Create the PaymentIntent//проблема с числом!!!!
     let intent = await stripe.paymentIntents.create({
-      amount: 1099,
+      amount: request.body.payment_sum,
       currency: "usd",
       payment_method: request.body.payment_method_id,
 
